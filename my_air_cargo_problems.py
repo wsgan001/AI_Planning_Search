@@ -121,10 +121,13 @@ class AirCargoProblem(Problem):
         """
         # TODO implement
         possible_actions = []
+        current_pos = decode_state(state, self.state_map).pos # find current positive state
 
         # find possible action for each action
         for action in self.actions_list:
-
+            # check all the precondition are matched, append it into possible actions
+            if len(action.precond_pos) == len([precond for precond in action.precond_pos if precond in current_pos]):
+                possible_actions.append(action)
         return possible_actions
 
     def result(self, state: str, action: Action):
@@ -138,6 +141,16 @@ class AirCargoProblem(Problem):
         """
         # TODO implement
         new_state = FluentState([], [])
+        current_state = decode_state(state, self.state_map)
+        pos_list = [s for s in current_state.pos if s not in action.effect_rem]
+        pos_list.extend(action.effect_add)
+
+        neg_list = [s for s in current_state.neg if s not in action.effect_add]
+        neg_list.extend(action.effect_rem)
+        new_state = FluentState(pos_list, neg_list)
+        print(new_state.pos)
+        print(new_state.neg)
+
         return encode_state(new_state, self.state_map)
 
     def goal_test(self, state: str) -> bool:
