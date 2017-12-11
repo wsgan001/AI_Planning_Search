@@ -148,8 +148,8 @@ class AirCargoProblem(Problem):
         neg_list = [s for s in current_state.neg if s not in action.effect_add]
         neg_list.extend(action.effect_rem)
         new_state = FluentState(pos_list, neg_list)
-        print(new_state.pos)
-        print(new_state.neg)
+        # print(new_state.pos)
+        # print(new_state.neg)
 
         return encode_state(new_state, self.state_map)
 
@@ -192,6 +192,7 @@ class AirCargoProblem(Problem):
         """
         # TODO implement (see Russell-Norvig Ed-3 10.2.3  or Russell-Norvig Ed-2 11.2)
         count = 0
+        current_state = node.state
         return count
 
 
