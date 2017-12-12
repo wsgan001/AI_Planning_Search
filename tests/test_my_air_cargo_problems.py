@@ -10,7 +10,7 @@ from lp_utils import decode_state
 from my_air_cargo_problems import (
     air_cargo_p1, air_cargo_p2, air_cargo_p3,
 )
-'''
+
 class TestAirCargoProb1(unittest.TestCase):
 
     def setUp(self):
@@ -34,7 +34,6 @@ class TestAirCargoProb2(unittest.TestCase):
     def test_ACP2_num_requirements(self):
         self.assertEqual(len(self.p2.goal),3)
 
-
 class TestAirCargoProb3(unittest.TestCase):
 
     def setUp(self):
@@ -45,7 +44,7 @@ class TestAirCargoProb3(unittest.TestCase):
 
     def test_ACP3_num_requirements(self):
         self.assertEqual(len(self.p3.goal),4)
-'''
+
 
 class TestAirCargoMethods(unittest.TestCase):
 
