@@ -196,7 +196,7 @@ def mutexify(node1: PgNode, node2: PgNode):
 class PlanningGraph():
     """
     A planning graph as described in chapter 10 of the AIMA text. The planning
-    graph can be used to reason about 
+    graph can be used to reason about
     """
 
     def __init__(self, problem: Problem, state: str, serial_planning=True):
@@ -408,11 +408,20 @@ class PlanningGraph():
         :return: bool
         """
         # TODO test for Inconsistent Effects between nodes
-        return False
+
+        # e.g. In spare tire problem, remove(spare, trunk) is mutex with leaveOvernight because of At(spare, ground)
+        # check whether effect in action 1 and action2 had negated each other
+        if len(set(node_a1.action.effect_add) & set(node_a2.action.effect_rem)) == 0 and \
+                        len(set(node_a2.action.effect_add) & set(node_a1.action.effect_rem)) == 0:
+            return False # no negate effect
+
+        return True
+
+
 
     def interference_mutex(self, node_a1: PgNode_a, node_a2: PgNode_a) -> bool:
         """
-        Test a pair of actions for mutual exclusion, returning True if the 
+        Test a pair of actions for mutual exclusion, returning True if the
         effect of one action is the negation of a precondition of the other.
 
         HINT: The Action instance associated with an action node is accessible
@@ -425,7 +434,14 @@ class PlanningGraph():
         :return: bool
         """
         # TODO test for Interference between nodes
-        return False
+        # check each action effect add and rem has interfered precondition pos and neg
+        if len(set(node_a1.action.effect_add) & set(node_a2.action.precond_neg)) == 0 and\
+            len(set(node_a2.action.effect_add) & set(node_a1.action.precond_neg)) == 0 and\
+            len(set(node_a1.action.effect_rem) & set(node_a2.action.precond_pos)) == 0 and \
+            len(set(node_a2.action.effect_rem) & set(node_a1.action.precond_pos)) == 0 :
+            return False
+
+        return True
 
     def competing_needs_mutex(self, node_a1: PgNode_a, node_a2: PgNode_a) -> bool:
         """
@@ -439,6 +455,11 @@ class PlanningGraph():
         """
 
         # TODO test for Competing Needs between nodes
+        # check whether two actions has mutex precondition
+        for parent_a1 in node_a1.parents:
+            for parent_a2 in node_a2.parents:
+                    if parent_a1.is_mutex(parent_a2):
+                        return True
         return False
 
     def update_s_mutex(self, nodeset: set):
@@ -474,6 +495,10 @@ class PlanningGraph():
         :return: bool
         """
         # TODO test for negation between nodes
+        # check whether s1 and s2 have the same symbol but different pos
+        if node_s1.symbol == node_s2.symbol and node_s1.is_pos != node_s2.is_pos:
+            return True
+
         return False
 
     def inconsistent_support_mutex(self, node_s1: PgNode_s, node_s2: PgNode_s):
@@ -493,7 +518,13 @@ class PlanningGraph():
         :return: bool
         """
         # TODO test for Inconsistent Support between nodes
-        return False
+        # check each action whether it is possible to achieve tow literals in the same time
+        for parent_s1 in node_s1.parents:
+            for parent_s2 in node_s2.parents:
+                if not parent_s1.is_mutex(parent_s2):
+                    return False
+
+        return True # no actions could achieve the two literals in the same time
 
     def h_levelsum(self) -> int:
         """The sum of the level costs of the individual goals (admissible if goals independent)
@@ -503,4 +534,14 @@ class PlanningGraph():
         level_sum = 0
         # TODO implement
         # for each goal in the problem, determine the level cost, then add them together
+        goals = self.problem.goal
+        s_levels = self.s_levels
+
+        for goal in goals:
+            node_g = PgNode_s(goal, True)
+            #check the goal in which level, increase level_sum
+            for index, node_s in enumerate(s_levels):
+                if node_g in node_s:
+                    level_sum += index
+                    break
         return level_sum
